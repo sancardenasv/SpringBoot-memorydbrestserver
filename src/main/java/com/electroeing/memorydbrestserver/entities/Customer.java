@@ -1,15 +1,22 @@
 package com.electroeing.memorydbrestserver.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "customers")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Customer {
     @Id
+    @Column
     private String dni;
+    @Column
     private String name;
+    @Column
     private Integer age;
 
     @Override
