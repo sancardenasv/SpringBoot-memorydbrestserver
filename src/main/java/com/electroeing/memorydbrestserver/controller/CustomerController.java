@@ -2,6 +2,7 @@ package com.electroeing.memorydbrestserver.controller;
 
 import com.electroeing.memorydbrestserver.entities.Customer;
 import com.electroeing.memorydbrestserver.repository.CustomerRepository;
+import com.electroeing.memorydbrestserver.util.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +40,22 @@ public class CustomerController {
     }
 
     @PutMapping("{dni}")
-    public Customer updateCustomer(@PathVariable String dni, @RequestBody Customer customer, HttpServletResponse response) {
+    public Response updateCustomer(@PathVariable String dni, @RequestBody Customer customer, HttpServletResponse response) {
         logger.info("Updating customer: dni={}, customer={}", dni, customer);
-        Customer currentCustomer = customerRepository.getOne(dni);
-        if (currentCustomer != null){
-            return customerRepository.save(customer);
+        String reason = "";
+        if (customer.getAge() < 18) {
+            Customer currentCustomer = customerRepository.getOne(dni);
+            if (currentCustomer != null){
+                Customer cu = customerRepository.save(customer);
+                Response rs = new Response(true, reason);
+                rs.addBodyObject("customer", cu);
+                return rs;
+            }
+            reason = String.format("No customer with dni %s found to be edited.", dni);
+        } else {
+            reason = String.format("Customer age invalid: %s. Must be under 18.", customer.getAge());
         }
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        return null;
+        return new Response(false, reason);
     }
 }
