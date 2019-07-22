@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin
 @RestController
@@ -55,6 +56,23 @@ public class CustomerController {
         } else {
             reason = String.format("Customer age invalid: %s. Must be under 18.", customer.getAge());
         }
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return new Response(false, reason);
+    }
+
+    @PostMapping("")
+    public Response createCustomer(@RequestBody Customer customer, HttpServletResponse response) {
+        logger.info("Creating customer: customer={}", customer);
+        String reason = "";
+        Optional<Customer> currentCustomer = customerRepository.findById(customer.getDni());
+        if (!currentCustomer.isPresent()){
+            Customer cu = customerRepository.save(customer);
+            Response rs = new Response(true, reason);
+            rs.addBodyObject("customer", cu);
+            return rs;
+        }
+        reason = String.format("Customer with dni %s already exists.", customer.getDni());
+
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return new Response(false, reason);
     }
