@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,12 +33,6 @@ public class CustomerController {
     public List<Customer> getCustomerList() {
         logger.info("Customers request received");
         return customerRepository.findAll();
-    }
-
-    @PostMapping("create")
-    public Customer createCustomer(Customer customer) {
-        logger.info("Creating customer: {}", customer);
-        return customerRepository.save(customer);
     }
 
     @PutMapping("{dni}")
@@ -72,6 +67,21 @@ public class CustomerController {
             return rs;
         }
         reason = String.format("Customer with dni %s already exists.", customer.getDni());
+
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        return new Response(false, reason);
+    }
+
+    @DeleteMapping("{dni}")
+    public Response deleteCustomer(@PathVariable String dni, HttpServletResponse response) {
+        logger.info("Requested customer DELETE: dni={}", dni);
+        String reason = "";
+        Optional<Customer> currentCustomer = customerRepository.findById(dni);
+        if (currentCustomer.isPresent()){
+            customerRepository.deleteById(dni);
+            return new Response(true, reason);
+        }
+        reason = String.format("Customer with dni %s does not exists.", dni);
 
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return new Response(false, reason);
