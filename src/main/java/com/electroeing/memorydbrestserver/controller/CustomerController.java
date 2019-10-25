@@ -26,8 +26,12 @@ import java.util.Optional;
 public class CustomerController {
     private static Logger logger = LoggerFactory.getLogger(CustomerController.class);
 
+    private CustomerRepository customerRepository;
+
     @Autowired
-    CustomerRepository customerRepository;
+    public CustomerController(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
     @GetMapping
     public List<Customer> getCustomerList() {
